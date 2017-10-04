@@ -477,7 +477,6 @@ static void	fw_reset_work_fn(struct work_struct *unused)
 		printk(KERN_ERR "[heci-ish]: FW reset failed (%d)\n", rv);
 }
 
-
 static void sync_fw_clock(struct heci_device *dev)
 {
 	static unsigned long prev_sync;
