@@ -404,7 +404,7 @@ static int	ish_fw_reset_handler(struct heci_device *dev)
 	spin_unlock_irqrestore(&dev->rd_msg_spinlock, flags);
 
 	/* Handle ISS FW reset against upper layers */
-	heci_bus_remove_all_clients(dev);	/* Remove all client devices */
+	heci_bus_remove_all_clients(dev);			/* Remove all client devices */
 
 	/* Send RESET_NOTIFY_ACK (with reset_id) */
 /*#####################################*/
@@ -478,22 +478,6 @@ static void	fw_reset_work_fn(struct work_struct *unused)
 }
 
 
-static void	sync_fw_clock(struct heci_device *dev)
-{
-	static unsigned long	prev_sync;
-	struct timespec	ts;
-	uint64_t	usec;
-
-	if (prev_sync && jiffies - prev_sync < 20 * HZ)
-		return;
-
-	prev_sync = jiffies;
-	get_monotonic_boottime(&ts);
-	usec = (uint64_t)ts.tv_sec * 1000000 + (uint64_t)ts.tv_nsec / 1000;
-	ipc_send_mng_msg(dev, MNG_SYNC_FW_CLOCK, &usec, sizeof(uint64_t));
-}
-
-
 static void sync_fw_clock(struct heci_device *dev)
 {
 	static unsigned long prev_sync;
@@ -508,6 +492,7 @@ static void sync_fw_clock(struct heci_device *dev)
 	usec = (uint64_t)ts.tv_sec * 1000000 + (uint64_t)ts.tv_nsec / 1000;
 	ipc_send_mng_msg(dev, MNG_SYNC_FW_CLOCK, &usec, sizeof(uint64_t));
 }
+
 
 /*
  *	Receive and process IPC management messages
@@ -557,6 +542,8 @@ static void	recv_ipc(struct heci_device *dev, uint32_t doorbell_val)
 		break;
 	}
 }
+
+
 
 
 /**
@@ -657,7 +644,6 @@ irqreturn_t ish_irq_handler(int irq, void *dev_id)
 	}
 
 eoi:
-
 	ISH_DBG_PRINT(KERN_ALERT
 		"%s(): Doorbell cleared, busy reading cleared\n", __func__);
 	/* Update IPC counters */
