@@ -1,7 +1,6 @@
 /*
  * Intel Atom SOC Power Management Controller Driver
  * Copyright (c) 2014, Intel Corporation.
- * Copyright (C) 2016 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -287,7 +286,7 @@ static int pm_suspend_exit_event(void)
 			/* Compute the time spent in suspend */
 			legacy_suspend.residency += suspend_time;
 			do_div(suspend_time, USEC_PER_MSEC);
-			pr_debug("Sleep residency in the last suspend cycle = %llu ms",
+			pr_info("Sleep residency in the last suspend cycle = %llu ms",
 				suspend_time);
 		}
 	}
