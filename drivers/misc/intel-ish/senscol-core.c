@@ -25,7 +25,7 @@
 #include <linux/poll.h>
 #include <linux/sched.h>
 #include <linux/wait.h>
-#include "ishtp-hid.h"
+#include "heci-hid.h"
 
 struct list_head	senscol_impl_list;
 struct list_head	senscol_sensors_list;
@@ -1066,7 +1066,7 @@ void senscol_flush_cb(void)
 
 
 /*
- * file operations structure will be used for ishtp char device.
+ * file operations structure will be used for heci char device.
  */
 static const struct file_operations senscol_fops = {
 	.owner = THIS_MODULE,
