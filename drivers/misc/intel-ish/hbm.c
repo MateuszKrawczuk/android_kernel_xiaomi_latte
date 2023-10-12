@@ -841,7 +841,6 @@ void	recv_hbm(struct ishtp_device *dev, struct ishtp_msg_hdr *ishtp_hdr)
 						spin_unlock_irqrestore(
 							&cl->tx_list_spinlock,
 							tx_flags);
-						wake_up(&cl->wait);
 					}
 				}
 				break;
