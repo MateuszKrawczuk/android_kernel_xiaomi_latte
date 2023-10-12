@@ -12,6 +12,7 @@
  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
  * more details.
  */
+
 #include <linux/senscol/senscol-core.h>
 
 #if !SENSCOL_1
@@ -24,6 +25,7 @@
 #include <linux/miscdevice.h>
 #include <linux/poll.h>
 #include <linux/compat.h>
+#include "ishtp-hid.h"
 
 int sensor_num = 0;
 
@@ -1094,12 +1096,8 @@ int senscol_init(void)
 	rv = misc_register(&senscol_misc_device);
 	if (rv)
 		return	rv;
-	return 0;
-}
 
-void senscol_exit(void)
-{
-	misc_deregister(&senscol_misc_device);
+	return 0;
 }
 
 #endif /* !SENSCOL_1 */

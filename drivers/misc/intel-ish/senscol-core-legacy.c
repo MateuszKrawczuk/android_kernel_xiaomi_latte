@@ -12,6 +12,7 @@
  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
  * more details.
  */
+
 #include <linux/senscol/senscol-core.h>
 
 #if SENSCOL_1
