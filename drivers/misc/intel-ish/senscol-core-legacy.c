@@ -23,7 +23,6 @@
 #include <linux/slab.h>
 #include <linux/sched.h>
 #include <linux/wait.h>
-#include <linux/list.h>
 #include "platform-config.h"
 #include <linux/miscdevice.h>
 #include <linux/poll.h>
@@ -53,23 +52,12 @@ int senscol_reset_notify_legacy(void)
 
 	struct siginfo si;
 	int ret;
-	struct task_struct *task, *p = NULL;
-	struct list_head *pos, *n;
 
 	memset(&si, 0, sizeof(struct siginfo));
 	si.si_signo = SIGUSR1;
 	si.si_code = SI_USER;
 
-	task = &init_task;
-	list_for_each_safe(pos, n, &task->tasks)
-	{
-		p = list_entry(pos, struct task_struct, tasks);
-		if (p == user_task)
-			break;
-		else
-			p = NULL;
-	}
-	if (p == NULL)
+	if (user_task == NULL)
 		return -EINVAL;
 
 	ret = send_sig_info(SIGUSR1, &si, user_task);
