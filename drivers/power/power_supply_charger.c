@@ -28,7 +28,6 @@ struct power_supply_charger {
 	struct work_struct wireless_chrgr_work;
 	struct mutex evt_lock;
 	struct power_supply_cable_props cable_props;
-        wait_queue_head_t wait_chrg_enable;
 };
 
 static struct power_supply_charger psy_chrgr;
@@ -856,7 +855,6 @@ EXPORT_SYMBOL(power_supply_register_charger);
 static int __init power_supply_charger_init(void)
 {
 	mutex_init(&psy_chrgr.evt_lock);
-	init_waitqueue_head(&psy_chrgr.wait_chrg_enable);
 	init_charger_cables(cable_list, ARRAY_SIZE(cable_list));
 	INIT_LIST_HEAD(&psy_chrgr.chrgr_cache_lst);
 	INIT_LIST_HEAD(&psy_chrgr.batt_cache_lst);

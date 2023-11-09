@@ -1040,6 +1040,7 @@ static void handle_pwrsrc_interrupt(u16 int_reg, u16 stat_reg)
 		if (mask) {
 			pmic_write_reg(chc.reg_map->pmic_usbphyctrl, 0x1);
 			if (chc.vbus_state == VBUS_ENABLE) {
+				chc.host_cable_state = true;
 				if (chc.otg->set_vbus)
 					chc.otg->set_vbus(chc.otg, true);
 				atomic_notifier_call_chain(&chc.otg->notifier,
@@ -1058,6 +1059,7 @@ static void handle_pwrsrc_interrupt(u16 int_reg, u16 stat_reg)
 					chc.otg->set_vbus(chc.otg, false);
 				atomic_notifier_call_chain(&chc.otg->notifier,
 						USB_EVENT_NONE, NULL);
+				chc.host_cable_state = false;
 			}
 			pmic_write_reg(chc.reg_map->pmic_usbphyctrl, 0x0);
 
@@ -1081,10 +1083,10 @@ static void handle_pwrsrc_interrupt(u16 int_reg, u16 stat_reg)
 		mask = !!(stat_reg & BIT_POS(PMIC_INT_VBUS));
 
 		if (mask) {
-			if (!chc.is_internal_usb_phy)
+			if (!chc.is_internal_usb_phy && !chc.host_cable_state)
 				dev_err(chc.dev, "USB VBUS Detected. \n");
 		} else {
-			if (!chc.is_internal_usb_phy) {
+			if (!chc.is_internal_usb_phy && !chc.host_cable_state) {
 				cap.ma = 0;
 				cap.chrg_type = POWER_SUPPLY_CHARGER_TYPE_USB_DCP;
 				cap.chrg_evt = POWER_SUPPLY_CHARGER_EVENT_DISCONNECT;
