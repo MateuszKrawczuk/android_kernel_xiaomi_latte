@@ -1612,7 +1612,8 @@ static void intel_device_info_runtime_init(struct drm_device *dev)
 			info->num_pipes = 0;
 		}
 	}
-
+	
+	/* Initialize slice/subslice/EU info */
 	if (IS_CHERRYVIEW(dev)) {
 		u32 fuse, mask_eu;
 
@@ -1623,6 +1624,17 @@ static void intel_device_info_runtime_init(struct drm_device *dev)
 				  CHV_FGT_EU_DIS_SS1_R1_MASK);
 		info->eu_total = 16 - hweight32(mask_eu);
 	}
+	DRM_DEBUG_DRIVER("slice total: %u\n", info->slice_total);
+	DRM_DEBUG_DRIVER("subslice total: %u\n", info->subslice_total);
+	DRM_DEBUG_DRIVER("subslice per slice: %u\n", info->subslice_per_slice);
+	DRM_DEBUG_DRIVER("EU total: %u\n", info->eu_total);
+	DRM_DEBUG_DRIVER("EU per subslice: %u\n", info->eu_per_subslice);
+	DRM_DEBUG_DRIVER("has slice power gating: %s\n",
+			 info->has_slice_pg ? "y" : "n");
+	DRM_DEBUG_DRIVER("has subslice power gating: %s\n",
+			 info->has_subslice_pg ? "y" : "n");
+	DRM_DEBUG_DRIVER("has EU power gating: %s\n",
+			 info->has_eu_pg ? "y" : "n");
 }
 
 static int
