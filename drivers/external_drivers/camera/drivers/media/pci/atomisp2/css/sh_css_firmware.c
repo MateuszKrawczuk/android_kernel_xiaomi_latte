@@ -1,16 +1,16 @@
-/**
-Support for Intel Camera Imaging ISP subsystem.
-Copyright (c) 2010 - 2015, Intel Corporation.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms and conditions of the GNU General Public License,
-version 2, as published by the Free Software Foundation.
-
-This program is distributed in the hope it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-more details.
-*/
+/*
+ * Support for Intel Camera Imaging ISP subsystem.
+ * Copyright (c) 2015, Intel Corporation.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ */
 
 #include <math_support.h>
 #include "platform_support.h"
@@ -30,7 +30,6 @@ more details.
 #include "ia_css_isp_params.h"
 #include "ia_css_isp_configs.h"
 #include "ia_css_isp_states.h"
-#include "string_support.h" /* memcpy_s */
 
 #define _STR(x) #x
 #define STR(x) _STR(x)
@@ -48,10 +47,10 @@ struct fw_param {
 /* Warning: same order as SH_CSS_BINARY_ID_* */
 static struct firmware_header *firmware_header;
 
-/* The string STR(irci_ecr-stable_btns_20160510_20160628_1849) is a place holder
+/* The string STR(irci_stable_candrpv_0415_20150423_1753) is a place holder
  * which will be replaced with the actual RELEASE_VERSION
  * during package generation. Please do not modify  */
-static const char *release_version = STR(irci_ecr-stable_btns_20160510_20160628_1849);
+static const char *release_version = STR(irci_stable_candrpv_0415_20150423_1753);
 
 #define MAX_FW_REL_VER_NAME	300
 static char FW_rel_ver_name[MAX_FW_REL_VER_NAME] = "---";
@@ -101,8 +100,7 @@ setup_binary(struct ia_css_fw_info *fw, const char *fw_data, struct ia_css_fw_in
 	if (sh_css_fw->blob.code == NULL)
 		return IA_CSS_ERR_CANNOT_ALLOCATE_MEMORY;
 
-	memcpy_s((void *)sh_css_fw->blob.code, fw->blob.size, blob_data, fw->blob.size);
-
+	memcpy((void *)sh_css_fw->blob.code, blob_data, fw->blob.size);
 	sh_css_fw->blob.data = (char *)sh_css_fw->blob.code + fw->blob.data_source;
 	fw_minibuffer[binary_id].buffer = sh_css_fw->blob.code;
 
@@ -151,7 +149,7 @@ sh_css_load_blob_info(const char *fw, const struct ia_css_fw_info *bi, struct ia
 		if (namebuffer == NULL)
 			return IA_CSS_ERR_CANNOT_ALLOCATE_MEMORY;
 
-		memcpy_s(namebuffer, namelength+1, name, namelength+1);
+		memcpy(namebuffer, name, namelength+1);
 
 		bd->name = fw_minibuffer[index].name = namebuffer;
 	} else {
@@ -174,20 +172,18 @@ sh_css_load_blob_info(const char *fw, const struct ia_css_fw_info *bi, struct ia
 		fw_minibuffer[index].buffer = parambuf;
 
 		/* copy ia_css_memory_offsets */
-		memcpy_s(parambuf, (paramstruct_size + configstruct_size + statestruct_size), (void *)(fw + bi->blob.memory_offsets.offsets[IA_CSS_PARAM_CLASS_PARAM]),
+		memcpy(parambuf, (void *)(fw + bi->blob.memory_offsets.offsets[IA_CSS_PARAM_CLASS_PARAM]),
 			paramstruct_size);
 		bd->mem_offsets.array[IA_CSS_PARAM_CLASS_PARAM].ptr = parambuf;
 
 		/* copy ia_css_config_memory_offsets */
-		memcpy_s(parambuf + paramstruct_size,
-				(configstruct_size + statestruct_size),
+		memcpy(parambuf + paramstruct_size,
 				(void *)(fw + bi->blob.memory_offsets.offsets[IA_CSS_PARAM_CLASS_CONFIG]),
 				configstruct_size);
 		bd->mem_offsets.array[IA_CSS_PARAM_CLASS_CONFIG].ptr = parambuf + paramstruct_size;
 
 		/* copy ia_css_state_memory_offsets */
-		memcpy_s(parambuf + paramstruct_size + configstruct_size,
-				 statestruct_size,
+		memcpy(parambuf + paramstruct_size + configstruct_size,
 				(void *)(fw + bi->blob.memory_offsets.offsets[IA_CSS_PARAM_CLASS_STATE]),
 				statestruct_size);
 		bd->mem_offsets.array[IA_CSS_PARAM_CLASS_STATE].ptr = parambuf + paramstruct_size + configstruct_size;

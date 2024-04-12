@@ -1,16 +1,16 @@
-/**
-Support for Intel Camera Imaging ISP subsystem.
-Copyright (c) 2010 - 2015, Intel Corporation.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms and conditions of the GNU General Public License,
-version 2, as published by the Free Software Foundation.
-
-This program is distributed in the hope it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-more details.
-*/
+/*
+ * Support for Intel Camera Imaging ISP subsystem.
+ * Copyright (c) 2015, Intel Corporation.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ */
 
 #ifndef __IA_CSS_ERR_H
 #define __IA_CSS_ERR_H
@@ -58,17 +58,6 @@ enum ia_css_fw_warning {
 		This warning can be avoided by unlocking locked frame-buffers more timely. */
 	IA_CSS_FW_WARNING_FRAME_PARAM_MISMATCH, /** < Frame and param pair mismatched in tagger.
 		This warning can be avoided by providing a param set for each frame. */
-	IA_CSS_FW_WARNING_UNLOCK_EXP_ID_FAILED, /** < Unlock request for frame exp_id failed.
-		Exposure ID could not be found on the circular buffer.  This warning can be
-		avoided by not requesting a frame to be unlocked that was previously unlocked.*/
-	IA_CSS_FW_WARNING_CAPTURE_EXP_ID_FAILED, /** <Failed to set the 'capture' indicator when
-		sending a marked frame to the capture pipe.  The exposure ID could not be found
-		on the circular buffer.  This warning can be avoided by not unlocking a frame
-		buffer marked for capture.*/
-	IA_CSS_FW_WARNING_UNLOCK_EXP_ID_SKIPPED, /** < Unlock request for frame exp_id skipped.
-		A request was received to unlock a frame that is currently being captured.
-		This warning can be avoided by unlocking a marked frame only after receiving
-		the frame done event.*/
 };
 
 #endif /* __IA_CSS_ERR_H */

@@ -1,16 +1,16 @@
-/**
-Support for Intel Camera Imaging ISP subsystem.
-Copyright (c) 2010 - 2015, Intel Corporation.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms and conditions of the GNU General Public License,
-version 2, as published by the Free Software Foundation.
-
-This program is distributed in the hope it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-more details.
-*/
+/*
+ * Support for Intel Camera Imaging ISP subsystem.
+ * Copyright (c) 2015, Intel Corporation.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ */
 
 
 #ifndef IA_CSS_NO_DEBUG
@@ -279,7 +279,6 @@ ia_css_eed1_8_debug_dtrace(
 	const struct ia_css_eed1_8_config *eed,
 	unsigned level)
 {
-	unsigned int i;
 	if (!eed)
 		return;
 
@@ -316,26 +315,6 @@ ia_css_eed1_8_debug_dtrace(
 	ia_css_debug_dtrace(level, "\t%-32s = %d\n", "pos_margin1", eed->pos_margin1);
 	ia_css_debug_dtrace(level, "\t%-32s = %d\n", "neg_margin0", eed->neg_margin0);
 	ia_css_debug_dtrace(level, "\t%-32s = %d\n", "neg_margin1", eed->neg_margin1);
-
-	ia_css_debug_dtrace(level, "\t%-32s = ", "dew_enhance_seg_x");
-	for (i = 0; i < IA_CSS_NUMBER_OF_DEW_ENHANCE_SEGMENTS; i++)
-		ia_css_debug_dtrace(level, "%d ", eed->dew_enhance_seg_x[i]);
-	ia_css_debug_dtrace(level, "\n");
-
-	ia_css_debug_dtrace(level, "\t%-32s = ", "dew_enhance_seg_y");
-	for (i = 0; i < IA_CSS_NUMBER_OF_DEW_ENHANCE_SEGMENTS; i++)
-		ia_css_debug_dtrace(level, "%d ", eed->dew_enhance_seg_y[i]);
-	ia_css_debug_dtrace(level, "\n");
-
-	ia_css_debug_dtrace(level, "\t%-32s = ", "dew_enhance_seg_slope");
-	for (i = 0; i < IA_CSS_NUMBER_OF_DEW_ENHANCE_SEGMENTS - 1; i++)
-		ia_css_debug_dtrace(level, "%d ", eed->dew_enhance_seg_slope[i]);
-	ia_css_debug_dtrace(level, "\n");
-
-	ia_css_debug_dtrace(level, "\t%-32s = ", "dew_enhance_seg_exp");
-	for (i = 0; i < IA_CSS_NUMBER_OF_DEW_ENHANCE_SEGMENTS - 1; i++)
-		ia_css_debug_dtrace(level, "%d ", eed->dew_enhance_seg_exp[i]);
-	ia_css_debug_dtrace(level, "\n");
 
 	ia_css_debug_dtrace(level, "\t%-32s = %d\n", "dedgew_max", eed->dedgew_max);
 }

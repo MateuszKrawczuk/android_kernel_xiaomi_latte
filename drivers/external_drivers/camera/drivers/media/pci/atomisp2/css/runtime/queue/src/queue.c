@@ -1,16 +1,16 @@
-/**
-Support for Intel Camera Imaging ISP subsystem.
-Copyright (c) 2010 - 2015, Intel Corporation.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms and conditions of the GNU General Public License,
-version 2, as published by the Free Software Foundation.
-
-This program is distributed in the hope it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-more details.
-*/
+/*
+ * Support for Intel Camera Imaging ISP subsystem.
+ * Copyright (c) 2015, Intel Corporation.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ */
 
 #include "ia_css_queue.h"
 #include <math_support.h>
@@ -114,9 +114,6 @@ int ia_css_queue_enqueue(
 		if (error != 0)
 			return error;
 
-		if (cb_desc.size == 0)
-			return EINVAL;
-
 		/* b. Operate on the queue */
 		if (ia_css_circbuf_desc_is_full(&cb_desc))
 			return ENOBUFS;
@@ -175,9 +172,6 @@ int ia_css_queue_dequeue(
 		if (error != 0)
 			return error;
 
-		if (cb_desc.size == 0)
-			return EINVAL;
-
 		/* b. Operate on the queue */
 		if (ia_css_circbuf_desc_is_empty(&cb_desc))
 			return ENODATA;
@@ -228,10 +222,8 @@ int ia_css_queue_is_full(
 			return error;
 
 		/* b. Operate on the queue */
-		if (cb_desc.size != 0) {
-			*is_full = ia_css_circbuf_desc_is_full(&cb_desc);
-			return 0;
-		}
+		*is_full = ia_css_circbuf_desc_is_full(&cb_desc);
+		return 0;
 	}
 
 	return EINVAL;
@@ -338,7 +330,7 @@ int ia_css_queue_peek(
 
 		/* Check if offset is valid */
 		num_elems = ia_css_circbuf_desc_get_num_elems(&cb_desc);
-		if (offset > num_elems || cb_desc.size == 0)
+		if (offset > num_elems)
 			return EINVAL;
 
 		offset = OP_std_modadd(cb_desc.start, offset, cb_desc.size);
@@ -380,15 +372,11 @@ int ia_css_queue_is_empty(
 
 		/* b. Operate on the queue */
 		*is_empty = ia_css_circbuf_desc_is_empty(&cb_desc);
-/*SP queues are all in LOCAL. Hence marking this block of code as text*/
-#if defined(__SP)
-#pragma hivecc section = "text"
-#endif
 		return 0;
 	}
 
 	return EINVAL;
-#if defined(__SP)
+#if defined(IS_ISP_2500_SYSTEM) && defined(__SP)
 #pragma hivecc section = "critical"
 #endif
 }

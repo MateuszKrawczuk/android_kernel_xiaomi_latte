@@ -1,16 +1,16 @@
-/**
-Support for Intel Camera Imaging ISP subsystem.
-Copyright (c) 2010 - 2015, Intel Corporation.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms and conditions of the GNU General Public License,
-version 2, as published by the Free Software Foundation.
-
-This program is distributed in the hope it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-more details.
-*/
+/*
+ * Support for Intel Camera Imaging ISP subsystem.
+ * Copyright (c) 2015, Intel Corporation.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ */
 
 #ifndef _SH_CSS_PARAMS_H_
 #define _SH_CSS_PARAMS_H_
@@ -18,8 +18,6 @@ more details.
 /*! \file */
 
 /* Forward declaration to break mutual dependency */
-#include <linux/mutex.h>
-
 struct ia_css_isp_parameters;
 
 #include <type_support.h>
@@ -45,7 +43,6 @@ struct ia_css_isp_parameters;
 #include "ia_css_isp_acc_params.h"
 #else
 #include "ob/ob_1.0/ia_css_ob_param.h"
-#include "ob/ob2/ia_css_ob2_param.h"
 /* Isp configurations per stream */
 struct sh_css_isp_param_configs {
 	/* OB (Optical Black) */
@@ -66,7 +63,6 @@ struct ia_css_isp_parameters {
 	const struct ia_css_morph_table   *morph_table;
 	const struct ia_css_shading_table *sc_table;
 	struct ia_css_shading_table *sc_config;
-	struct ia_css_shading_table *sc_config_remote;
 	struct ia_css_macc_table    macc_table;
 	struct ia_css_gamma_table   gc_table;
 	struct ia_css_ctc_table     ctc_table;
@@ -80,17 +76,7 @@ struct ia_css_isp_parameters {
 	struct ia_css_cc_config     rgb2yuv_cc_config;
 	struct ia_css_tnr_config    tnr_config;
 	struct ia_css_ob_config     ob_config;
-	/*----- DPC configuration -----*/
-	/* The default DPC configuration is retained and currently set
-	 * using the stream configuration. The code generated from genparams
-	 * uses this configuration to set the DPC parameters per stage but this
-	 * will be overwritten by the per pipe configuration */
 	struct ia_css_dp_config     dp_config;
-	/* ------ pipe specific DPC configuration ------ */
-	/* Please note that this implementation is a temporary solution and
-	 * should be replaced by CSS per pipe configuration when the support
-	 * is ready (HSD 1303967698)*/
-	struct ia_css_dp_config     pipe_dp_config[IA_CSS_PIPE_ID_NUM];
 	struct ia_css_nr_config     nr_config;
 	struct ia_css_ee_config     ee_config;
 	struct ia_css_de_config     de_config;
@@ -98,8 +84,8 @@ struct ia_css_isp_parameters {
 	struct ia_css_anr_config    anr_config;
 	struct ia_css_ce_config     ce_config;
 	struct ia_css_formats_config     formats_config;
-/* ---- deprecated: replaced with pipe_dvs_6axis_config
-	struct ia_css_dvs_6axis_config  *dvs_6axis_config;   ---- */
+/* ---- deprecated: replaced with pipe_dvs_6axis_config---- */
+	struct ia_css_dvs_6axis_config  *dvs_6axis_config;
 	struct ia_css_ecd_config    ecd_config;
 	struct ia_css_ynr_config    ynr_config;
 	struct ia_css_yee_config    yee_config;
@@ -122,8 +108,6 @@ struct ia_css_isp_parameters {
 #if defined(IS_ISP_2500_SYSTEM)
 	struct ia_css_2500_lin_kernel_config  lin_2500_config;
 	struct ia_css_2500_tnr_kernel_config  tnr_2500_config;
-	struct ia_css_tnr3_kernel_config      tnr3_config;
-	struct ia_css_2500_rgbir_kernel_config rgbir_2500_config;
 #endif
 	struct ia_css_dvs_6axis_config  *pipe_dvs_6axis_config[IA_CSS_PIPE_ID_NUM];
 /* ------ deprecated(bz675) : from ------ */
@@ -131,17 +115,6 @@ struct ia_css_isp_parameters {
 /* ------ deprecated(bz675) : to ------ */
 	struct ia_css_dvs_coefficients  dvs_coefs;
 	struct ia_css_dvs2_coefficients dvs2_coefs;
-	/* ISP 2.7 */
-	struct ia_css_dpc2_config	dpc2_config;
-	struct ia_css_eed1_8_config	eed1_8_config;
-	struct ia_css_ob2_config	ob2_config;
-	struct ia_css_ctc2_config	ctc2_config;
-	struct ia_css_iefd2_6_config	iefd2_6_config;
-	struct ia_css_macc1_5_config	macc1_5_config;
-	struct ia_css_macc1_5_table	macc1_5_table;
-	struct ia_css_xnr3_0_11_config	xnr3_0_11_config;
-	struct ia_css_bnlm_config	bnlm_config;
-	struct ia_css_tdf_config	tdf_config;
 
 	bool isp_params_changed;
 	bool isp_mem_params_changed
@@ -152,18 +125,9 @@ struct ia_css_isp_parameters {
 	bool dvs2_coef_table_changed;
 	bool morph_table_changed;
 	bool sc_table_changed;
-#if !defined(IS_ISP_2500_SYSTEM)
-	bool sc_table_dirty;
-	unsigned int sc_table_last_pipe_num;
-#endif
 	bool anr_thres_changed;
 /* ---- deprecated: replaced with pipe_dvs_6axis_config_changed ---- */
 	bool dvs_6axis_config_changed;
-	/* ------ pipe specific DPC configuration ------ */
-	/* Please note that this implementation is a temporary solution and
-	 * should be replaced by CSS per pipe configuration when the support
-	 * is ready (HSD 1303967698) */
-	bool pipe_dpc_config_changed[IA_CSS_PIPE_ID_NUM];
 /* ------ deprecated(bz675) : from ------ */
 	bool shading_settings_changed;
 /* ------ deprecated(bz675) : to ------ */
@@ -179,7 +143,6 @@ struct ia_css_isp_parameters {
 	struct sh_css_ddr_address_map_size ddr_ptrs_size;
 	struct ia_css_frame *output_frame; /**< Output frame the config is to be applied to (optional) */
 	uint32_t isp_parameters_id; /**< Unique ID to track which config was actually applied to a particular frame */
-	struct mutex data_mutex;
 };
 
 void
@@ -200,14 +163,6 @@ ia_css_params_alloc_convert_sctbl(
 
 struct ia_css_isp_config *
 sh_css_pipe_isp_config_get(struct ia_css_pipe *pipe);
-
-#if !defined(IS_ISP_2500_SYSTEM)
-/* ipu address allocation/free for gdc lut */
-hrt_vaddress
-sh_css_params_alloc_gdc_lut(void);
-void
-sh_css_params_free_gdc_lut(hrt_vaddress addr);
-#endif
 
 enum ia_css_err
 sh_css_params_map_and_store_default_gdc_lut(void);

@@ -1,16 +1,16 @@
-/**
-Support for Intel Camera Imaging ISP subsystem.
-Copyright (c) 2010 - 2015, Intel Corporation.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms and conditions of the GNU General Public License,
-version 2, as published by the Free Software Foundation.
-
-This program is distributed in the hope it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-more details.
-*/
+/*
+ * Support for Intel Camera Imaging ISP subsystem.
+ * Copyright (c) 2015, Intel Corporation.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ */
 
 #ifndef __IA_CSS_FRAME_PUBLIC_H
 #define __IA_CSS_FRAME_PUBLIC_H
@@ -36,15 +36,6 @@ enum ia_css_bayer_order {
 	IA_CSS_BAYER_ORDER_GBRG, /**< GBGBGBGBGB .. RGRGRGRGRG */
 };
 #define IA_CSS_BAYER_ORDER_NUM (IA_CSS_BAYER_ORDER_GBRG + 1)
-
-/** For selecting appropriate sensor type. Future sensor types like
-*RGBC - RGBCLear, should be added here.
-*/
-enum ia_css_raw_type {
-	IA_CSS_RAW_BAYER, /**< Any of the 4 ia_css_bayer_order input pixel orders */
-	IA_CSS_RAW_RGBIR_IR_ON_Gr, /**< BGBGBGBGBG .. IrRIrRIrRIrRIrR */
-	IA_CSS_RAW_RGBIR_IR_ON_Gb, /**< BIrBIrBIrBIrBIr .. GRGRGRGRGR */
-};
 
 /** Frame plane structure. This describes one plane in an image
  *  frame buffer.
@@ -122,11 +113,6 @@ struct ia_css_frame_info {
 					 only valid for RAW bayer frames */
 	enum ia_css_bayer_order raw_bayer_order; /**< bayer order, only valid
 						      for RAW bayer frames */
-	enum ia_css_raw_type raw_type; /**<To choose the proper raw frame type.
-						 for Legacy SKC pipes/Default is set to IA_CSS_RAW_BAYER.
-						 for RGB IR sensor - driver should set it to:
-						 IronGr case - IA_CSS_RAW_RGBIR_IR_ON_Gr
-						 IronGb case - IA_CSS_RAW_RGBIR_IR_ON_Gb*/
 	/* the params below are computed based on bayer_order
 	 * we can remove the raw_bayer_order if it is redundant
 	 * keeping it for now as bxt and fpn code seem to use it
@@ -142,7 +128,6 @@ struct ia_css_frame_info {
 	IA_CSS_FRAME_FORMAT_NUM, /* format */ \
 	0,                       /* raw_bit_depth */ \
 	IA_CSS_BAYER_ORDER_NUM,  /* raw_bayer_order */ \
-	IA_CSS_RAW_BAYER,        /* ia_css_raw_type */\
 	{0,                       /*start col */ \
 	 0},                       /*start line */ \
 }

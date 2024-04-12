@@ -1,7 +1,7 @@
 /*
  * Support for Clovertrail PNW Camera Imaging ISP subsystem.
  *
- * Copyright (c) 2016 Intel Corporation. All Rights Reserved.
+ * Copyright (c) 2013 Intel Corporation. All Rights Reserved.
  * Copyright (C) 2016 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or
@@ -719,26 +719,6 @@ static void __apply_additional_pipe_config(
 		if (stream_env->pipe_configs[pipe_id].
 			default_capture_config.mode == CSS_CAPTURE_MODE_RAW)
 			stream_env->pipe_configs[pipe_id].enable_dz = false;
-
-		/* the isp default to use ISP2.2 and the camera hal will
-		 * control whether use isp2.7 */
-#ifdef V4L2_CID_ATOMISP_SELECT_ISP_VERSION
-		if (asd->select_isp_version->val ==
-			ATOMISP_CSS_ISP_PIPE_VERSION_2_7) {
-			stream_env->pipe_configs[pipe_id].isp_pipe_version =
-				SH_CSS_ISP_PIPE_VERSION_2_7;
-			/* ISP2.7 does not support DZ, we should always turn
-			   it off. */
-			stream_env->pipe_configs[pipe_id].enable_dz = false;
-			/* ISP2.7 still pipe requires enable_xnr to be true */
-			stream_env->pipe_configs[pipe_id]
-				.default_capture_config.enable_xnr = true;
-			asd->params.capture_config.enable_xnr = true;
-		} else {
-			stream_env->pipe_configs[pipe_id].isp_pipe_version =
-				SH_CSS_ISP_PIPE_VERSION_2_2;
-		}
-#endif
 		break;
 	case IA_CSS_PIPE_ID_VIDEO:
 		/* enable reduced pipe to have binary
@@ -1334,11 +1314,8 @@ int atomisp_css_start(struct atomisp_sub_device *asd,
 	if (atomisp_streaming_count(isp)) {
 		dev_dbg(isp->dev, "skip start sp\n");
 	} else {
-		if (!sh_css_hrt_system_is_idle()) {
+		if (!sh_css_hrt_system_is_idle())
 			dev_err(isp->dev, "CSS HW not idle before starting SP\n");
-			ret = -EINVAL;
-			goto start_err;
-		}
 		if (ia_css_start_sp() != IA_CSS_SUCCESS) {
 			dev_err(isp->dev, "start sp error.\n");
 			ret = -EINVAL;
@@ -1612,10 +1589,8 @@ void atomisp_css_free_stat_buffers(struct atomisp_sub_device *asd)
 	}
 
 	if (asd->params.css_param.dvs_6axis) {
-		mutex_lock(&asd->data_mutex);
 		ia_css_dvs2_6axis_config_free(asd->params.css_param.dvs_6axis);
 		asd->params.css_param.dvs_6axis = NULL;
-		mutex_unlock(&asd->data_mutex);
 	}
 
 	for (i = 0; i < ATOMISP_METADATA_TYPE_NUM; i++) {
@@ -1765,7 +1740,7 @@ int atomisp_alloc_dis_coef_buf(struct atomisp_sub_device *asd)
 
 int atomisp_alloc_metadata_output_buf(struct atomisp_sub_device *asd)
 {
-	int i;
+	unsigned int i;
 
 	/* We allocate the cpu-side buffer used for communication with user
 	 * space */
@@ -2022,10 +1997,8 @@ int atomisp_css_input_set_effective_resolution(
 {
 	struct ia_css_stream_config *s_config =
 			&asd->stream_env[stream_id].stream_config;
-
 	s_config->input_config.effective_res.width = width;
 	s_config->input_config.effective_res.height = height;
-
 	return 0;
 }
 
@@ -2434,8 +2407,7 @@ int atomisp_css_stop(struct atomisp_sub_device *asd,
 	atomisp_flush_params_queue(&asd->video_out_vf);
 	atomisp_flush_params_queue(&asd->video_out_preview);
 	atomisp_flush_params_queue(&asd->video_out_video_capture);
-	atomisp_free_css_parameters(asd, &asd->params.css_param);
-
+	atomisp_free_css_parameters(&asd->params.css_param);
 	memset(&asd->params.css_param, 0, sizeof(asd->params.css_param));
 	return 0;
 }
@@ -2496,6 +2468,8 @@ static enum ia_css_pipe_mode __pipe_id_to_pipe_mode(
 		if (mipi_info && mipi_info->input_format ==
 			ATOMISP_INPUT_FORMAT_YUV420_8_LEGACY)
 			return IA_CSS_PIPE_MODE_YUVPP;
+		if (asd->copy_mode_format_conv)
+			return IA_CSS_PIPE_MODE_CAPTURE;
 		return IA_CSS_PIPE_MODE_COPY;
 	case IA_CSS_PIPE_ID_PREVIEW:
 		return IA_CSS_PIPE_MODE_PREVIEW;
@@ -2635,18 +2609,10 @@ static void __configure_capture_pp_input(struct atomisp_sub_device *asd,
 
 	pipe_extra_configs->enable_yuv_ds = true;
 
-	/* ISP2.7 didn't support downscale */
-	if (pipe_configs->isp_pipe_version == SH_CSS_ISP_PIPE_VERSION_2_7) {
-		pipe_configs->capt_pp_in_res.width =
-			pipe_configs->output_info[0].res.width;
-		pipe_configs->capt_pp_in_res.height =
-			pipe_configs->output_info[0].res.height;
-	} else {
-		pipe_configs->capt_pp_in_res.width =
-			stream_config->input_config.effective_res.width;
-		pipe_configs->capt_pp_in_res.height =
-			stream_config->input_config.effective_res.height;
-	}
+	pipe_configs->capt_pp_in_res.width =
+		stream_config->input_config.effective_res.width;
+	pipe_configs->capt_pp_in_res.height =
+		stream_config->input_config.effective_res.height;
 
 	dev_dbg(isp->dev, "configuring pipe[%d]capture pp input w=%d.h=%d.\n",
 		pipe_id, width, height);
@@ -3047,8 +3013,6 @@ int atomisp_get_css_frame_info(struct atomisp_sub_device *asd,
 	struct ia_css_pipe_info info;
 	int pipe_index = atomisp_get_pipe_index(asd, source_pad);
 	int stream_index;
-	struct atomisp_device *isp = asd->isp;
-
 	if (ATOMISP_SOC_CAMERA(asd))
 		stream_index = atomisp_source_pad_to_stream_id(asd, source_pad);
 	else {
@@ -3056,13 +3020,8 @@ int atomisp_get_css_frame_info(struct atomisp_sub_device *asd,
 			   ATOMISP_INPUT_STREAM_VIDEO :
 			   atomisp_source_pad_to_stream_id(asd, source_pad);
 	}
-
-	if (IA_CSS_SUCCESS != ia_css_pipe_get_info(asd->stream_env[stream_index]
-				 .pipes[pipe_index], &info)) {
-		dev_err(isp->dev, "ia_css_pipe_get_info FAILED");
-		return -EINVAL;
-	}
-
+	ia_css_pipe_get_info(asd->stream_env[stream_index]
+		.pipes[pipe_index], &info);
 	switch (source_pad) {
 	case ATOMISP_SUBDEV_PAD_SOURCE_CAPTURE:
 		*frame_info = info.output_info[0];
@@ -3429,8 +3388,6 @@ int atomisp_css_offline_capture_configure(struct atomisp_sub_device *asd,
 {
 	enum ia_css_err ret;
 
-	dev_dbg(asd->isp->dev, "%s num_capture:%d skip:%d offset:%d\n",
-			__func__, num_captures, skip, offset);
 	ret = ia_css_stream_capture(
 		asd->stream_env[ATOMISP_INPUT_STREAM_GENERAL].stream,
 		num_captures, skip, offset);
@@ -3475,20 +3432,10 @@ int atomisp_css_exp_id_unlock(struct atomisp_sub_device *asd, int exp_id)
 int atomisp_css_capture_enable_xnr(struct atomisp_sub_device *asd,
 				   bool enable)
 {
-	if (asd->stream_env[ATOMISP_INPUT_STREAM_GENERAL]
-		.pipe_configs[IA_CSS_PIPE_ID_CAPTURE].isp_pipe_version ==
-		IA_CSS_PIPE_VERSION_2_7) {
-		/* ISP2.7 still pipe requires enable_xnr must be true */
-		asd->stream_env[ATOMISP_INPUT_STREAM_GENERAL]
-			.pipe_configs[IA_CSS_PIPE_ID_CAPTURE]
-			.default_capture_config.enable_xnr = true;
-		asd->params.capture_config.enable_xnr = true;
-	} else {
-		asd->stream_env[ATOMISP_INPUT_STREAM_GENERAL]
-			.pipe_configs[IA_CSS_PIPE_ID_CAPTURE]
-			.default_capture_config.enable_xnr = enable;
-		asd->params.capture_config.enable_xnr = enable;
-	}
+	asd->stream_env[ATOMISP_INPUT_STREAM_GENERAL]
+		.pipe_configs[IA_CSS_PIPE_ID_CAPTURE]
+		.default_capture_config.enable_xnr = enable;
+	asd->params.capture_config.enable_xnr = enable;
 	asd->stream_env[ATOMISP_INPUT_STREAM_GENERAL]
 		.update_pipe[IA_CSS_PIPE_ID_CAPTURE] = true;
 
@@ -3915,65 +3862,6 @@ int atomisp_css_get_ob_config(struct atomisp_sub_device *asd,
 	memcpy(config, &ob_config, sizeof(*config));
 
 	return 0;
-}
-
-void atomisp_css_set_dpc2_config(struct atomisp_sub_device *asd,
-			struct atomisp_css_dpc2_config *dpc2_config)
-{
-	asd->params.config.dpc2_config = dpc2_config;
-}
-
-void atomisp_css_set_eed1_8_config(struct atomisp_sub_device *asd,
-			struct atomisp_css_eed1_8_config *eed1_8_config)
-{
-	asd->params.config.eed1_8_config = eed1_8_config;
-}
-void atomisp_css_set_ob2_config(struct atomisp_sub_device *asd,
-			struct atomisp_css_ob2_config *ob2_config)
-{
-	asd->params.config.ob2_config = ob2_config;
-}
-
-void atomisp_css_set_ctc2_config(struct atomisp_sub_device *asd,
-			struct atomisp_css_ctc2_config *ctc2_config)
-{
-	asd->params.config.ctc2_config = ctc2_config;
-}
-
-void atomisp_css_set_iefd2_6_config(struct atomisp_sub_device *asd,
-			struct atomisp_css_iefd2_6_config *iefd2_6_config)
-{
-	asd->params.config.iefd2_6_config = iefd2_6_config;
-}
-
-void atomisp_css_set_macc1_5_config(struct atomisp_sub_device *asd,
-			struct atomisp_css_macc1_5_config *macc1_5_config)
-{
-	asd->params.config.macc1_5_config = macc1_5_config;
-}
-
-void atomisp_css_set_macc1_5_table(struct atomisp_sub_device *asd,
-			struct atomisp_css_macc1_5_table *macc1_5_table)
-{
-	asd->params.config.macc1_5_table = macc1_5_table;
-}
-
-void atomisp_css_set_xnr3_0_11_config(struct atomisp_sub_device *asd,
-			struct atomisp_css_xnr3_0_11_config *xnr3_0_11_config)
-{
-	asd->params.config.xnr3_0_11_config = xnr3_0_11_config;
-}
-
-void atomisp_css_set_bnlm_config(struct atomisp_sub_device *asd,
-			struct atomisp_css_bnlm_config *bnlm_config)
-{
-	asd->params.config.bnlm_config = bnlm_config;
-}
-
-void atomisp_css_set_tdf_config(struct atomisp_sub_device *asd,
-			struct atomisp_css_tdf_config *tdf_config)
-{
-	asd->params.config.tdf_config = tdf_config;
 }
 
 int atomisp_css_get_dp_config(struct atomisp_sub_device *asd,
@@ -4674,6 +4562,7 @@ int atomisp_css_isr_thread(struct atomisp_device *isp,
 	enum atomisp_input_stream_id stream_id = 0;
 	struct atomisp_css_event current_event;
 	struct atomisp_sub_device *asd = &isp->asd[0];
+	bool reset_wdt_timer[MAX_STREAM_NUM] = {false};
 	int i;
 
 	while (!atomisp_css_dequeue_event(&current_event)) {
@@ -4689,7 +4578,7 @@ int atomisp_css_isr_thread(struct atomisp_device *isp,
 				current_event.event.fw_assert_line_no);
 			for (i = 0; i < isp->num_of_streams; i++)
 				atomisp_wdt_stop(&isp->asd[i], 0);
-			queue_work(isp->wdt_work_queue, &isp->wdt_work);
+			atomisp_wdt((unsigned long)isp);
 			return -EINVAL;
 		} else if (current_event.event.type == IA_CSS_EVENT_TYPE_FW_WARNING) {
 			dev_warn(isp->dev, "%s: ISP reports warning, code is %d, exp_id %d\n",
@@ -4701,13 +4590,8 @@ int atomisp_css_isr_thread(struct atomisp_device *isp,
 		asd = __get_atomisp_subdev(current_event.event.pipe,
 					isp, &stream_id);
 		if (!asd) {
-			if (current_event.event.type == CSS_EVENT_TIMER)
-				dev_dbg(isp->dev,
-					"event: Timer event.");
-			else
-				dev_warn(isp->dev, "%s:no subdev.event:%d",
-						__func__,
-						current_event.event.type);
+			dev_warn(isp->dev, "%s:no subdev.event:%d",  __func__,
+				current_event.event.type);
 			continue;
 		}
 
@@ -4717,11 +4601,13 @@ int atomisp_css_isr_thread(struct atomisp_device *isp,
 			frame_done_found[asd->index] = true;
 			atomisp_buf_done(asd, 0, CSS_BUFFER_TYPE_OUTPUT_FRAME,
 					 current_event.pipe, true, stream_id);
+			reset_wdt_timer[asd->index] = true; /* ISP running */
 			break;
 		case CSS_EVENT_SEC_OUTPUT_FRAME_DONE:
 			frame_done_found[asd->index] = true;
 			atomisp_buf_done(asd, 0, CSS_BUFFER_TYPE_SEC_OUTPUT_FRAME,
 					 current_event.pipe, true, stream_id);
+			reset_wdt_timer[asd->index] = true; /* ISP running */
 			break;
 		case CSS_EVENT_3A_STATISTICS_DONE:
 			atomisp_buf_done(asd, 0,
@@ -4739,11 +4625,13 @@ int atomisp_css_isr_thread(struct atomisp_device *isp,
 			atomisp_buf_done(asd, 0,
 					 CSS_BUFFER_TYPE_VF_OUTPUT_FRAME,
 					 current_event.pipe, true, stream_id);
+			reset_wdt_timer[asd->index] = true; /* ISP running */
 			break;
 		case CSS_EVENT_SEC_VF_OUTPUT_FRAME_DONE:
 			atomisp_buf_done(asd, 0,
 					 CSS_BUFFER_TYPE_SEC_VF_OUTPUT_FRAME,
 					 current_event.pipe, true, stream_id);
+			reset_wdt_timer[asd->index] = true; /* ISP running */
 			break;
 		case CSS_EVENT_DIS_STATISTICS_DONE:
 			atomisp_buf_done(asd, 0,
@@ -4762,6 +4650,21 @@ int atomisp_css_isr_thread(struct atomisp_device *isp,
 					current_event.event.type);
 			break;
 		}
+	}
+	/* If there are no buffers queued then
+	 * delete wdt timer. */
+	for (i = 0; i < isp->num_of_streams; i++) {
+		asd = &isp->asd[i];
+		if (!asd)
+			continue;
+		if (asd->streaming != ATOMISP_DEVICE_STREAMING_ENABLED)
+			continue;
+		if (!atomisp_buffers_queued(asd))
+			atomisp_wdt_stop(asd, false);
+		else if (reset_wdt_timer[i])
+		/* SOF irq should not reset wdt timer. */
+			atomisp_wdt_refresh(asd,
+					ATOMISP_WDT_KEEP_CURRENT_DELAY);
 	}
 
 	return 0;

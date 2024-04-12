@@ -1,16 +1,16 @@
-/**
-Support for Intel Camera Imaging ISP subsystem.
-Copyright (c) 2010 - 2015, Intel Corporation.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms and conditions of the GNU General Public License,
-version 2, as published by the Free Software Foundation.
-
-This program is distributed in the hope it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-more details.
-*/
+/*
+ * Support for Intel Camera Imaging ISP subsystem.
+ * Copyright (c) 2015, Intel Corporation.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ */
 
 #ifndef __IA_CSS_FRAME_COMM_H__
 #define __IA_CSS_FRAME_COMM_H__
@@ -78,12 +78,7 @@ struct ia_css_frame_sp_info {
 					only valid for RAW bayer frames */
 	unsigned char raw_bayer_order;	/* bayer order, only valid
 					for RAW bayer frames */
-	unsigned char raw_type; /*To choose the proper raw frame type.
-						 for Legacy SKC pipes/Default is set to IA_CSS_RAW_BAYER.
-						 for RGB IR sensor - driver should set it to:
-						 IronGr case - IA_CSS_RAW_RGBIR_IR_ON_Gr
-						 IronGb case - IA_CSS_RAW_RGBIR_IR_ON_Gb */
-	unsigned char padding[2];	/* Extend to 32 bit multiple */
+	unsigned char padding[3];	/* Extend to 32 bit multiple */
 };
 
 struct ia_css_buffer_sp {

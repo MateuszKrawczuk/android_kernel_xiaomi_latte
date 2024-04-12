@@ -1,16 +1,16 @@
-/**
-Support for Intel Camera Imaging ISP subsystem.
-Copyright (c) 2010 - 2015, Intel Corporation.
-
-This program is free software; you can redistribute it and/or modify it
-under the terms and conditions of the GNU General Public License,
-version 2, as published by the Free Software Foundation.
-
-This program is distributed in the hope it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-more details.
-*/
+/*
+ * Support for Intel Camera Imaging ISP subsystem.
+ * Copyright (c) 2015, Intel Corporation.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ */
 
 #ifndef __IA_CSS_TDF_TYPES_H
 #define __IA_CSS_TDF_TYPES_H
@@ -21,16 +21,13 @@ more details.
 
 #include "type_support.h"
 
-/*  4 inteleaved threshold tables required for 4 interleaved blocks after forward transforms */
-#define TDF_PARAM_SIZE    (4)	/**< 4 interleaved threshold tables */
-
 /** Transform Domain Filter configuration
  *
  * \brief TDF public parameters.
  * \details Struct with all parameters for the TDF kernel that can be set
  * from the CSS API.
  *
- * ISP2.7: TDF is used.
+ * ISP2.6.1: TDF is used.
  */
 struct ia_css_tdf_config {
 	int32_t thres_flat_table[64];	/**< Final optimized strength table of NR for flat region. */
@@ -50,8 +47,6 @@ struct ia_css_tdf_config {
 	int32_t local_y_base_gain;	/**< Base gain of local luminance control. */
 	int32_t rad_x_origin;		/**< Initial x coord. for radius computation. */
 	int32_t rad_y_origin;		/**< Initial y coord. for radius computation. */
-	int32_t blend_ratio;        /**< Blending ratio between pixel and filtered pixel. */
-	int32_t min_edge_thres;     /**< Threshold for blending pixels. */
 };
 
 #endif /* __IA_CSS_TDF_TYPES_H */
