@@ -871,14 +871,12 @@ static int power_ctrl(struct v4l2_subdev *sd, bool flag)
 		return dev->platform_data->power_ctrl(sd, flag);
 
 	if (flag) {
-		ret |= dev->platform_data->v1p5_ctrl(sd, 1);
 		ret |= dev->platform_data->v1p8_ctrl(sd, 1);
 		ret |= dev->platform_data->v2p8_ctrl(sd, 1);
 		usleep_range(10000, 15000);
 	}
 
 	if (!flag || ret) {
-		ret |= dev->platform_data->v1p5_ctrl(sd, 0);
 		ret |= dev->platform_data->v1p8_ctrl(sd, 0);
 		ret |= dev->platform_data->v2p8_ctrl(sd, 0);
 	}
