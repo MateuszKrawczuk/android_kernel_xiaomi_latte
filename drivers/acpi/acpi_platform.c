@@ -68,6 +68,7 @@ static const struct acpi_device_id acpi_platform_device_ids[] = {
 	{ "SSP0001", 0 },
 
 	{ "INT33A2" },
+	{ "TPS61158" },
 	{ "INTA4322" },
 	{ }
 };
