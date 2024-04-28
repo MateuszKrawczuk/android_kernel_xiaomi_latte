@@ -199,7 +199,9 @@ static struct soc_button_info soc_button_PNP0C40[] = {
 	{ "volume_up", 2, EV_KEY, KEY_VOLUMEUP, true, false },
 	{ "volume_down", 3, EV_KEY, KEY_VOLUMEDOWN, true, false },
 	{ "rotation_lock", 4, EV_SW, SW_ROTATE_LOCK, false, false },
-	{ }
+    { "hall_lid_back", 5, KEY_RESERVED,  true, false},
+    { "hall_lid_front", 6, SW_LID, false, false},
+    { }
 };
 
 static const struct acpi_device_id soc_button_acpi_match[] = {
