@@ -2,6 +2,7 @@
  * HECI client driver for HID (ISS)
  *
  * Copyright (c) 2014-2015, Intel Corporation.
+ * Copyright (C) 2016 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -72,8 +73,8 @@ static void	report_bad_packet(void *recv_buf, size_t cur_pos, size_t payload_len
 	dev_err(&hid_heci_cl->device->dev, "total_bad=%u cur_pos=%u\n",
 		bad_recv_cnt, cur_pos);
 	dev_err(&hid_heci_cl->device->dev, "[%02X %02X %02X %02X]\n",
-		((unsigned char*)recv_msg)[0], ((unsigned char*)recv_msg)[1],
-		((unsigned char*)recv_msg)[2], ((unsigned char*)recv_msg)[3]);
+		((unsigned char *)recv_msg)[0], ((unsigned char *)recv_msg)[1],
+		((unsigned char *)recv_msg)[2], ((unsigned char *)recv_msg)[3]);
 	dev_err(&hid_heci_cl->device->dev, "[hid-ish]: payload_len=%u\n",
 		payload_len);
 	dev_err(&hid_heci_cl->device->dev, "[hid-ish]: multi_packet_cnt=%u\n",
@@ -143,7 +144,7 @@ static void	process_recv(void *recv_buf, size_t data_len)
 		case HOSTIF_DM_ENUM_DEVICES:
 			ISH_DBG_PRINT(KERN_ALERT
 				"[hid-ish]: %s(): HOSTIF_DM_ENUM_DEVICES [cur_pos=%u] [%02X %02X %02X %02X]\n",
-				__func__, cur_pos, ((unsigned char*)recv_msg)[0], ((unsigned char*)recv_msg)[1], ((unsigned char*)recv_msg)[2], ((unsigned char*)recv_msg)[3]);
+				__func__, cur_pos, ((unsigned char *)recv_msg)[0], ((unsigned char *)recv_msg)[1], ((unsigned char *)recv_msg)[2], ((unsigned char *)recv_msg)[3]);
 			if ((!(recv_msg->hdr.command & ~CMD_MASK) ||
 					init_done)) {
 				++bad_recv_cnt;
@@ -203,7 +204,7 @@ static void	process_recv(void *recv_buf, size_t data_len)
 		case HOSTIF_GET_HID_DESCRIPTOR:
 			ISH_DBG_PRINT(KERN_ALERT
 				"[hid-ish]: %s(): received HOSTIF_GET_HID_DESCRIPTOR [cur_pos=%u] [%02X %02X %02X %02X]\n",
-				__func__, cur_pos, ((unsigned char*)recv_msg)[0], ((unsigned char*)recv_msg)[1], ((unsigned char*)recv_msg)[2], ((unsigned char*)recv_msg)[3]);
+				__func__, cur_pos, ((unsigned char *)recv_msg)[0], ((unsigned char *)recv_msg)[1], ((unsigned char *)recv_msg)[2], ((unsigned char *)recv_msg)[3]);
 			ISH_DBG_PRINT(KERN_ALERT
 				"[hid-ish]: %s(): dump HID descriptor\n",
 				__func__);
@@ -232,6 +233,12 @@ static void	process_recv(void *recv_buf, size_t data_len)
 			break;
 
 		case HOSTIF_GET_REPORT_DESCRIPTOR:
+			ISH_DBG_PRINT(KERN_ALERT
+				"[hid-ish]: %s(): received HOSTIF_GET_REPORT_DESCRIPTOR [cur_pos=%u] [%02X %02X %02X %02X]\n",
+				__func__, cur_pos, ((unsigned char *)recv_msg)[0], ((unsigned char *)recv_msg)[1], ((unsigned char *)recv_msg)[2], ((unsigned char *)recv_msg)[3]);
+			ISH_DBG_PRINT(KERN_ALERT
+				"[hid-ish]: %s(): Length of report descriptor is %u\n",
+				__func__, (unsigned)payload_len);
 			if ((!(recv_msg->hdr.command & ~CMD_MASK) ||
 					init_done)) {
 				++bad_recv_cnt;
@@ -543,13 +550,6 @@ int     hid_heci_cl_remove(struct heci_cl_device *dev)
 	ISH_DBG_PRINT(KERN_ALERT "%s(): +++\n", __func__);
 	heci_hid_remove();
 	hid_heci_client_found = 0;
-
-	heci_cl_unlink(hid_heci_cl);
-	heci_cl_flush_queues(hid_heci_cl);
-
-	heci_cl_free(hid_heci_cl);
-
-	/* disband and free all Tx and Rx client-level rings */
 	hid_heci_cl = NULL;
 
 	for (i = 0; i < num_hid_devices ; ++i) {
@@ -573,7 +573,7 @@ struct heci_cl_driver	hid_heci_cl_driver = {
 
 /****************************************************************/
 
-static void workqueue_init_function(struct work_struct *work)
+void workqueue_init_function(struct work_struct *work)
 {
 	int	rv;
 	static unsigned char	buf[4096];
@@ -596,7 +596,7 @@ static void workqueue_init_function(struct work_struct *work)
 		__func__, hid_heci_client_found);
 
 	if (!hid_heci_client_found) {
-		dev_err(NULL, "[hid-ish]: timed out waiting for hid_heci_client_found\n");
+		printk(KERN_ERR "[hid-ish]: timed out waiting for hid_heci_client_found\n");
 		rv = -ENODEV;
 		goto	ret;
 	}
@@ -677,8 +677,15 @@ static void workqueue_init_function(struct work_struct *work)
 	}
 
 	/* Send GET_HID_DESCRIPTOR for each device */
+
+	/*
+	 * Temporary work-around for multi-descriptor traffic:
+	 * read only the first one
+	 * Will be removed when multi-TLC are supported
+	 */
+
 	num_hid_devices = hid_dev_count;
-	dev_warn(&hid_heci_cl->device->dev,
+	dev_err(&hid_heci_cl->device->dev,
 		"[hid-ish]: enum_devices_done OK, num_hid_devices=%d\n",
 		num_hid_devices);
 
@@ -707,14 +714,12 @@ static void workqueue_init_function(struct work_struct *work)
 			wait_event_timeout(init_wait, hid_descr_done, 30 * HZ);
 #endif
 		if (!hid_descr_done) {
-			dev_err(&hid_heci_cl->device->dev,
-				"[hid-ish]: timed out waiting for hid_descr_done\n");
+			printk(KERN_ERR "[hid-ish]: timed out waiting for hid_descr_done\n");
 			continue;
 		}
 
 		if (!hid_descr[i]) {
-			dev_err(&hid_heci_cl->device->dev,
-				"[hid-ish]: failed to allocate HID descriptor buffer\n");
+			printk(KERN_ERR "[hid-ish]: failed to allocate HID descriptor buffer\n");
 			continue;
 		}
 
@@ -773,7 +778,6 @@ ret:
 }
 /****************************************************************/
 
-
 static int __init ish_init(void)
 {
 	int	rv;
@@ -786,11 +790,16 @@ static int __init ish_init(void)
 
 	init_waitqueue_head(&init_wait);
 	init_waitqueue_head(&heci_hid_wait);
-	INIT_WORK(&my_work, workqueue_init_function);
-
 	/* Register HECI client device driver - ISS */
 	rv = heci_cl_driver_register(&hid_heci_cl_driver);
 
+	/*
+	 * 7/7/2014: in order to not stick Android boot, from here & below
+	 * needs to run in work queue and here we should return rv
+	 */
+	/****************************************************************/
+	INIT_WORK(&my_work, workqueue_init_function);
+	/***************************************************************/
 	return rv;
 
 }

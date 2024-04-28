@@ -2,6 +2,7 @@
  * ISS platform-specific definitions
  *
  * Copyright (c) 2012-2015, Intel Corporation.
+ * Copyright (C) 2016 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -17,7 +18,7 @@
 #define PLATFORM_CONFIG__H
 
 /* Build ID string */
-#define BUILD_ID	"245-reset-flow-release-hidcl-init-ishdbg-fixes"
+#define	BUILD_ID	"0195-fix-recv-hid-hw-reset"
 
 #define	ISH_DEBUG	0
 #if ISH_DEBUG
@@ -49,7 +50,7 @@
 #endif
 
 #define	REVISION_ID_CHT_A0	0x6
-#define	REVISION_ID_CHT_Ax_SI	0x0
+#define	REVISION_ID_CHT_A0_SI	0x0
 #define	REVISION_ID_CHT_Bx_SI	0x10
 #define	REVISION_ID_CHT_Kx_SI	0x20
 #define	REVISION_ID_CHT_Dx_SI	0x30

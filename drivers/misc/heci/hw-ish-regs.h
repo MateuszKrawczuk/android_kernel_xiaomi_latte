@@ -2,6 +2,7 @@
  * ISH registers definitions
  *
  * Copyright (c) 2012-2015, Intel Corporation.
+ * Copyright (C) 2016 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -41,7 +42,6 @@
 /* REMAP2 to enable DMA (D3 RCR) */
 #define	IPC_REG_ISH_RMP2	 (IPC_REG_BASE + 0x368)
 
-#define	IPC_REG_MAX		(IPC_REG_BASE + 0x400)
 /* register bits - HISR */
 
 /* bit corresponds HOST2ISH interrupt in PISR and PIMR registers */
@@ -67,9 +67,6 @@
 ISS FW may not write to them */
 #define	IPC_HOST_OWNS_MSG_BIT		(1<<IPC_HOST_OWNS_MSG_OFFS)
 
-/*
- * Host status bits (HOSTCOMM)
- */
 /* bit corresponds host ready bit in Host Status Register (HOST_COMM) */
 #define IPC_HOSTCOMM_READY_OFFS		(7)
 #define IPC_HOSTCOMM_READY_BIT		(1<<IPC_HOSTCOMM_READY_OFFS)

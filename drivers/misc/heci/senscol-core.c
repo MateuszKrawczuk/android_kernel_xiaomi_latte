@@ -2,6 +2,7 @@
  * Sensor collection framework core
  *
  * Copyright (c) 2014-2015, Intel Corporation.
+ * Copyright (C) 2016 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -641,8 +642,8 @@ int remove_senscol_sensor(uint32_t id)
 	list_for_each_entry_safe(sens, next, &senscol_sensors_list, link) {
 		if (sens->id == id) {
 			list_del(&sens->link);
-			spin_unlock_irqrestore(&senscol_lock, flags);
 
+			spin_unlock_irqrestore(&senscol_lock, flags);
 			for (i = 0; i < sens->num_properties; ++i)
 				if (sens->properties[i].name) {
 					kobject_put(&sens->properties[i].kobj);
@@ -669,6 +670,7 @@ int remove_senscol_sensor(uint32_t id)
 		}
 	}
 	spin_unlock_irqrestore(&senscol_lock, flags);
+
 
 	return -EINVAL;
 }

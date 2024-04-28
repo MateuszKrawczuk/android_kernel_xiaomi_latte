@@ -216,7 +216,7 @@ static void mei_txe_remove(struct pci_dev *pdev)
 		return;
 	}
 
-	pm_runtime_get_noresume(&pdev->dev);
+    pm_runtime_get_sync(&pdev->dev);
 
 	hw = to_txe_hw(dev);
 
@@ -244,6 +244,34 @@ static void mei_txe_remove(struct pci_dev *pdev)
 	pci_disable_device(pdev);
 }
 
+/**
+ * mei_shutdown - Device shutdown Routine
+ *
+ * @pdev: PCI device structure
+ *
+ */
+static void mei_txe_shutdown(struct pci_dev *pdev)
+{
+	struct mei_device *dev;
+	struct mei_txe_hw *hw;
+
+	dev = pci_get_drvdata(pdev);
+	if (!dev) {
+		dev_err(&pdev->dev, "mei: dev =NULL\n");
+		return;
+	}
+
+	pm_runtime_get_sync(&pdev->dev);
+
+	hw = to_txe_hw(dev);
+
+	mei_stop(dev);
+
+	/* disable interrupts */
+	mei_disable_interrupts(dev);
+	free_irq(pdev->irq, dev);
+	pci_disable_msi(pdev);
+}
 
 #ifdef CONFIG_PM_SLEEP
 static int mei_txe_pci_suspend(struct device *device)
@@ -441,7 +469,7 @@ static struct pci_driver mei_txe_driver = {
 	.id_table = mei_txe_pci_tbl,
 	.probe = mei_txe_probe,
 	.remove = mei_txe_remove,
-	.shutdown = mei_txe_remove,
+        .shutdown = mei_txe_shutdown,
 	.driver.pm = MEI_TXE_PM_OPS,
 };
 

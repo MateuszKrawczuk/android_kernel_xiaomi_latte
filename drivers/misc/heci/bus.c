@@ -259,7 +259,6 @@ void	heci_bus_remove_all_clients(struct heci_device *heci_dev)
 
 	spin_lock_irqsave(&heci_dev->cl_list_lock, flags);
 	list_for_each_entry_safe(cl, next, &heci_dev->cl_list, link) {
-/*		list_del(&cl->link);*/
 		cl->state = HECI_CL_DISCONNECTED;
 
 		/*
@@ -323,10 +322,6 @@ void	heci_bus_remove_all_clients(struct heci_device *heci_dev)
 	heci_dev->me_client_presentation_num  = 0;
 	heci_dev->me_client_index = 0;
 	bitmap_zero(heci_dev->me_clients_map, HECI_CLIENTS_MAX);
-/*
-	bitmap_zero(heci_dev->host_clients_map, HECI_CLIENTS_MAX);
-	bitmap_set(heci_dev->host_clients_map, 0, 3);
-*/
 	spin_unlock_irqrestore(&heci_dev->me_clients_lock, flags);
 	ISH_DBG_PRINT(KERN_ALERT "%s(): ---\n", __func__);
 }
@@ -442,6 +437,8 @@ int __init heci_cl_bus_init(void)
 
 	ISH_DBG_PRINT(KERN_ALERT "%s(): Registering HECI bus\n", __func__);
 	rv = bus_register(&heci_cl_bus_type);
+	if (!rv)
+		heci_cl_alloc_dma_buf();
 	return	rv;
 }
 

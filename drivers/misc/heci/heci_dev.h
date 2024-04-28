@@ -2,6 +2,7 @@
  * Most HECI provider device and HECI logic declarations
  *
  * Copyright (c) 2003-2015, Intel Corporation.
+ * Copyright (C) 2016 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -230,7 +231,7 @@ struct heci_device {
 	spinlock_t	wr_msg_spinlock;
 */
 	struct hbm_version version;
-	struct heci_me_client *me_clients; /* Note: memory has to be allocated*/
+	struct heci_me_client *me_clients; /* Note: memory has to be allocated */
 	DECLARE_BITMAP(me_clients_map, HECI_CLIENTS_MAX);
 	DECLARE_BITMAP(host_clients_map, HECI_CLIENTS_MAX);
 	u8 me_clients_num;
@@ -269,7 +270,6 @@ struct heci_device {
 	const struct heci_hw_ops *ops;
 
 	size_t	mtu;
-	u32     heci_msg_hdr;
 	char hw[0] __aligned(sizeof(void *));
 };
 
@@ -280,7 +280,7 @@ void heci_device_init(struct heci_device *dev);
 void heci_reset(struct heci_device *dev, int interrupts);
 int heci_start(struct heci_device *dev);
 void heci_stop(struct heci_device *dev);
-void	heci_device_disable(struct heci_device *dev);
+void heci_device_disable(struct heci_device *dev);
 
 static inline unsigned long heci_secs_to_jiffies(unsigned long sec)
 {
@@ -314,7 +314,6 @@ static inline bool heci_host_is_ready(struct heci_device *dev)
 {
 	return dev->ops->host_is_ready(dev);
 }
-
 static inline bool heci_hw_is_ready(struct heci_device *dev)
 {
 	return dev->ops->hw_is_ready(dev);

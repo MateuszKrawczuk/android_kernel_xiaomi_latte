@@ -2,6 +2,7 @@
  * User-mode HECI API
  *
  * Copyright (c) 2015, Intel Corporation.
+ * Copyright (C) 2016 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -124,6 +125,7 @@ static int heci_release(struct inode *inode, struct file *file)
 	struct heci_cl *cl = file->private_data;
 	struct heci_device *dev;
 	int rets = 0;
+	unsigned int flags;
 
 	ISH_DBG_PRINT(KERN_ALERT "%s(): +++\n", __func__);
 	if (WARN_ON(!cl || !cl->dev))
@@ -135,9 +137,10 @@ static int heci_release(struct inode *inode, struct file *file)
 	 * May happen if device sent FW reset or was intentionally
 	 * halted by host SW. The client is then invalid
 	 */
+	if (dev->dev_state != HECI_DEV_ENABLED)
+		return	0;
 
-	if ((dev->dev_state == HECI_DEV_ENABLED) &&
-		(cl->state == HECI_CL_CONNECTED)) {
+	if (cl->state == HECI_CL_CONNECTED) {
 		cl->state = HECI_CL_DISCONNECTING;
 		dev_dbg(&dev->pdev->dev, "disconnecting client host client = %d, ME client = %d\n",
 			cl->host_client_id, cl->me_client_id);
@@ -153,7 +156,9 @@ static int heci_release(struct inode *inode, struct file *file)
 	file->private_data = NULL;
 
 	/* disband and free all Tx and Rx client-level rings */
+	spin_lock_irqsave(&dev->cl_list_lock, flags);
 	heci_cl_free(cl);
+	spin_unlock_irqrestore(&dev->cl_list_lock, flags);
 
 	ISH_DBG_PRINT(KERN_ALERT "%s(): ---\n", __func__);
 	return rets;
@@ -478,11 +483,6 @@ static long heci_ioctl(struct file *file, unsigned int cmd, unsigned long data)
 
 	dev = cl->dev;
 	dev_dbg(&dev->pdev->dev, "IOCTL cmd = 0x%x", cmd);
-
-	/* Test API for triggering PCI reset */
-	if (cmd == 0x12341234) {
-		return	heci_hw_reset(dev);
-	}
 
 	/* Test API for triggering host-initiated IPC reset to ISS */
 	if (cmd == 0x12345678) {

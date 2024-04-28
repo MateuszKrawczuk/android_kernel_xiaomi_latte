@@ -73,7 +73,7 @@ struct heci_cl {
 	struct heci_cl_tx_ring	tx_list, tx_free_list;
 	spinlock_t      tx_list_spinlock;
 	spinlock_t      tx_free_list_spinlock;
-	size_t	tx_offs;	/* Offset in buffer at head of 'tx_list' */
+	size_t	tx_offs;			/* Offset in buffer at head of 'tx_list' */
 	/*#############################*/
 	/* if we get a FC, and the list is not empty, we must know whether we
 	 * are at the middle of sending.
@@ -97,8 +97,7 @@ struct heci_cl {
 
 	/* Send/recv stats */
 	unsigned	send_msg_cnt;
-	unsigned	recv_msg_cnt_ipc;
-	unsigned	recv_msg_cnt_dma;
+	unsigned	recv_msg_cnt;
 	unsigned	recv_msg_num_frags;
 	unsigned	heci_flow_ctrl_cnt;
 	unsigned	out_flow_ctrl_cnt;
@@ -111,12 +110,6 @@ struct heci_cl {
 
 extern int	dma_ready;
 extern int	host_dma_enabled;
-extern void	*host_dma_tx_buf;
-extern unsigned	host_dma_tx_buf_size;
-extern uint64_t	host_dma_tx_buf_phys;
-extern void	*host_dma_rx_buf;
-extern unsigned	host_dma_rx_buf_size;
-extern uint64_t	host_dma_rx_buf_phys;
 
 int heci_can_client_connect(struct heci_device *heci_dev, uuid_le *uuid);
 int heci_me_cl_by_uuid(struct heci_device *dev, const uuid_le *cuuid);
@@ -192,10 +185,8 @@ void heci_cl_read_complete(struct heci_cl_rb *rb);
 void heci_cl_all_disconnect(struct heci_device *dev);
 void heci_cl_all_read_wakeup(struct heci_device *dev);
 void heci_cl_send_msg(struct heci_device *dev, struct heci_cl *cl);
-void heci_cl_alloc_dma_buf(void);
-void recv_heci_cl_msg(struct heci_device *dev, struct heci_msg_hdr *heci_hdr);
-void recv_heci_cl_msg_dma(struct heci_device *dev, void *msg,
-	struct dma_xfer_hbm *hbm);
+void	heci_cl_alloc_dma_buf(void);
+void	recv_heci_cl_msg(struct heci_device *dev, struct heci_msg_hdr *heci_hdr);
 
 #endif /* _HECI_CLIENT_H_ */
 
