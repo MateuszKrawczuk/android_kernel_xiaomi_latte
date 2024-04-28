@@ -583,31 +583,15 @@ err_unref_cursor:
 
 static void intel_dsi_enable(struct intel_encoder *encoder)
 {
-	struct drm_device *dev = encoder->base.dev;
-	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct intel_dsi *intel_dsi = enc_to_intel_dsi(&encoder->base);
-	struct intel_connector *intel_connector = intel_dsi->attached_connector;
-
-	DRM_DEBUG_KMS("\n");
-
+        DRM_DEBUG_KMS("\n");
 	intel_dsi_port_enable(encoder);
-
-	if (intel_dsi->backlight_on_delay >= 20)
-		msleep(intel_dsi->backlight_on_delay);
-	else
-		usleep_range(intel_dsi->backlight_on_delay * 1000,
-				(intel_dsi->backlight_on_delay * 1000) + 500);
-
-	if (dev_priv->display.enable_backlight)
-		dev_priv->display.enable_backlight(intel_connector);
 }
 
 static void intel_dsi_pre_disable(struct intel_encoder *encoder)
 {
 	struct drm_device *dev = encoder->base.dev;
-	struct drm_i915_private *dev_priv = dev->dev_private;
+
 	struct intel_dsi *intel_dsi = enc_to_intel_dsi(&encoder->base);
-	struct intel_connector *intel_connector = intel_dsi->attached_connector;
 	struct intel_crtc *intel_crtc = to_intel_crtc(encoder->base.crtc);
 	int pipe = intel_crtc->pipe;
 
@@ -623,16 +607,6 @@ static void intel_dsi_pre_disable(struct intel_encoder *encoder)
 		 */
 		mdelay(40);
 	}
-
-	if (dev_priv->display.disable_backlight)
-		dev_priv->display.disable_backlight(intel_connector);
-
-	if (intel_dsi->backlight_off_delay >= 20)
-		msleep(intel_dsi->backlight_off_delay);
-	else
-		usleep_range(intel_dsi->backlight_off_delay * 1000,
-				(intel_dsi->backlight_off_delay * 1000) + 500);
-
 	if (is_vid_mode(intel_dsi)) {
 		/* Send Shutdown command to the panel in LP mode */
 		dpi_send_cmd(intel_dsi, SHUTDOWN, DPI_LP_MODE_EN);

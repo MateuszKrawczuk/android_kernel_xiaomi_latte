@@ -446,6 +446,8 @@ static u32 intel_panel_compute_brightness(struct intel_connector *connector,
 	struct drm_device *dev = connector->base.dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct intel_panel *panel = &connector->panel;
+	if (!panel->backlight.present)
+		return 0;
 
 	WARN_ON(panel->backlight.max == 0);
 
@@ -1199,7 +1201,7 @@ static int intel_backlight_device_register(struct intel_connector *connector)
 	 * registration of multiple backlight devices in the driver.
 	 */
 	panel->backlight.device =
-		backlight_device_register("intel_backlight",
+		backlight_device_register("intel_backlight_disabled",
 					  connector->base.kdev,
 					  connector,
 					  &intel_backlight_device_ops, &props);

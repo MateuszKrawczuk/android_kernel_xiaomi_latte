@@ -3,6 +3,7 @@
  *  sst.c - Intel SST Driver for audio engine
  *
  *  Copyright (C) 2008-10	Intel Corp
+ *  Copyright (C) 2016 XiaoMi, Inc.
  *  Authors:	Vinod Koul <vinod.koul@intel.com>
  *		Harsha Priya <priya.harsha@intel.com>
  *		Dharageswari R <dharageswari.r@intel.com>
@@ -616,21 +617,17 @@ static const struct dmi_system_id dmi_machine_table[] = {
 };
 
 static struct platform_device cht_t_mach_dev = {
-	.name           = "cht_rt5672",
+	.name           = "cht_rt5659",
 	.id             = -1,
 	.num_resources  = 0,
 };
 
-static struct platform_device cht_cr_mrd_mach_dev = {
-	.name           = "cht_rt5645",
-	.id             = -1,
-	.num_resources  = 0,
-};
 static struct platform_device cht_cr_mach_dev = {
 	.name           = "cht_aic31xx",
 	.id             = -1,
 	.num_resources  = 0,
 };
+
 void sst_init_lib_mem_mgr(struct intel_sst_drv *ctx)
 {
 	struct sst_mem_mgr *mgr = &ctx->lib_mem_mgr;
@@ -676,27 +673,17 @@ int sst_request_firmware_async(struct intel_sst_drv *ctx)
 				"fw_sst_%04x.bin", ctx->pci_id);
 
 		board_name = dmi_get_system_info(DMI_BOARD_NAME);
-		if (strcmp(board_name, "T3 MRD") == 0) {
-			pr_info("Registering machine device %s\n",
-						cht_cr_mrd_mach_dev.name);
-			ret = platform_device_register(
-							&cht_cr_mrd_mach_dev);
-			if (ret) {
-				pr_err("failed to register machine device %s\n",
-						cht_cr_mrd_mach_dev.name);
-				return -ENOENT;
-			}
-		} else if (strcmp(board_name, "Cherry Trail CR") == 0) {
+		if (strcmp(board_name, "Cherry Trail CR") == 0) {
 			pr_info("Registering machine device %s\n",
 						cht_cr_mach_dev.name);
-			ret = platform_device_register(
-						&cht_cr_mach_dev);
+			ret = platform_device_register(&cht_cr_mach_dev);
 			if (ret) {
 				pr_err("failed to register machine device %s\n",
 						cht_cr_mach_dev.name);
 				return -ENOENT;
 			}
 		} else if ((strcmp(board_name, "Cherry Trail Tablet") == 0) ||
+				(strcmp(board_name, "Mipad") == 0) ||
 				(strcmp(board_name, "Cherry Trail FFD") == 0)) {
 			pr_info("Registering machine device %s\n",
 						cht_t_mach_dev.name);

@@ -2,6 +2,7 @@
  * sst_platform.c: SST platform  data initilization file
  *
  * Copyright (C) 2012 Intel Corporation
+ * Copyright (C) 2016 XiaoMi, Inc.
  * Author: Jeeja KP <jeeja.kp@intel.com>
  *
  * This program is free software; you can redistribute it and/or
@@ -49,8 +50,6 @@ static struct sst_dev_stream_map dpcm_strm_map_cht[] = {
 		SST_TASK_ID_MEDIA, SST_DEV_MAP_IN_USE},
 	{CHT_DPCM_VOIP,  0, SNDRV_PCM_STREAM_PLAYBACK, PIPE_RSVD,
 		SST_TASK_ID_MEDIA, SST_DEV_MAP_IN_USE},
-	{CHT_DPCM_LL,    0, SNDRV_PCM_STREAM_PLAYBACK, PIPE_RSVD,
-		SST_TASK_ID_MEDIA, SST_DEV_MAP_IN_USE},
 	{CHT_DPCM_PROBE, 0, SNDRV_PCM_STREAM_PLAYBACK,
 		SST_DFW_PATH_INDEX_PROBE1_PIPE_IN >> SST_DFW_PATH_ID_SHIFT,
 		SST_TASK_ID_MEDIA, SST_DEV_MAP_IN_USE},
@@ -78,8 +77,6 @@ static struct sst_dev_stream_map dpcm_strm_map_cht[] = {
 	{CHT_DPCM_AUDIO, 0, SNDRV_PCM_STREAM_CAPTURE, PIPE_RSVD,
 		SST_TASK_ID_MEDIA, SST_DEV_MAP_IN_USE},
 	{CHT_DPCM_VOIP,  0, SNDRV_PCM_STREAM_CAPTURE, PIPE_RSVD,
-		SST_TASK_ID_MEDIA, SST_DEV_MAP_IN_USE},
-	{CHT_DPCM_LL,    0, SNDRV_PCM_STREAM_CAPTURE, PIPE_RSVD,
 		SST_TASK_ID_MEDIA, SST_DEV_MAP_IN_USE},
 	{CHT_DPCM_PROBE, 0, SNDRV_PCM_STREAM_CAPTURE,
 		SST_DFW_PATH_INDEX_PROBE1_PIPE_OUT >> SST_DFW_PATH_ID_SHIFT,
@@ -181,11 +178,11 @@ sst_ssp_configs_mrfld[SST_NUM_SSPS][SST_MAX_SSP_MUX][SST_MAX_SSP_DOMAINS] = {
 				.bits_per_slot = 16,
 				.slots = 2,
 				.ssp_mode = SSP_MODE_MASTER,
-				.pcm_mode = SSP_PCM_MODE_NETWORK,
-				.data_polarity = 1,
+				.pcm_mode = SSP_PCM_MODE_NORMAL,
+				.data_polarity = 0,
 				.duplex = SSP_RX,
-				.ssp_protocol = SSP_MODE_PCM,
-				.fs_width = 1,
+				.ssp_protocol = SSP_MODE_I2S,
+				.fs_width = 32,
 				.fs_frequency = SSP_FS_48_KHZ,
 				.active_slot_map = 0x3,
 				.start_delay = 1,
@@ -354,8 +351,7 @@ static void set_cht_platform_config(void)
 	sst_platform_pdata.dfw_enable = 1;
 	memcpy(sst_platform_pdata.ssp_config, sst_ssp_configs_mrfld, sizeof(sst_ssp_configs_mrfld));
 	board_name = dmi_get_system_info(DMI_BOARD_NAME);
-	if ((strcmp(board_name, "Cherry Trail CR") == 0) ||
-			(strcmp(board_name, "T3 MRD") == 0)) {
+	if (strcmp(board_name, "Cherry Trail CR") == 0) {
 		pr_debug("Load CHT CR SSP Config %s\n", board_name);
 		memcpy(sst_platform_pdata.ssp_config, sst_ssp_configs_cht_cr,
 					sizeof(sst_ssp_configs_cht_cr));
